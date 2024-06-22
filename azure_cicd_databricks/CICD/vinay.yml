@@ -1,5 +1,5 @@
 trigger:
-  - main
+  - develop
 
 variables:
   - group: 'db-cicd-dev' 
