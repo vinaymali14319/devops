@@ -1,0 +1,22 @@
+trigger:
+  - main
+
+variables:
+  - group: 'db-cicd-dev' 
+  - name: vmImagename
+    value: windows-latest
+  - name: notebooksPath
+    value: "notebook"
+
+pool:
+  vmImage: $(vmImagename)
+
+stages:
+  - template: template/deply-notebook.yml
+    parameters:
+      stageId: "Deploy_to_Dev_Environment"
+      env: "dev"
+      environmentName: "$(dev-environment-name)"
+      resourceGroupName: "$(dev-resource-group-name)"
+      serviceConnection: "$(dev-service-connection-name)"
+      notebooksPath: "$(notebooksPath)"
