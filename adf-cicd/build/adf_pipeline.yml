@@ -1,0 +1,48 @@
+trigger:
+- main # Collaboration branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  subscriptionId: '2b2c2676-85a8-4a71-ac8f-7030a348ffe2'
+  resourceGroup: 'dev-adf-devops'
+  dataFactory: 'vinay-dev-adf-pipeline'
+  PackageFolder: 'build'
+  adfRootFolder: ''
+
+steps:
+
+# Install Node.js and the npm packages saved in your package.json file in the build
+- task: UseNode@1
+  inputs:
+    version: '18.x'
+  displayName: 'Install Node.js'
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: '$(Build.Repository.LocalPath)/$(PackageFolder)' # Replace with the package.json folder
+    verbose: true
+  displayName: 'Install npm package'
+
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: '$(Build.Repository.LocalPath)/$(PackageFolder)' # Replace with the package.json folder
+    customCommand: 'run build validate $(Build.Repository.LocalPath)/$(adfRootFolder)/subscriptions/$(subscriptionId)/resourceGroups/$(resourceGroup)/providers/Microsoft.DataFactory/factories/$(dataFactory)'
+  displayName: 'Validate data factory resources'
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: '$(Build.Repository.LocalPath)/$(PackageFolder)' # Replace with the package.json folder
+    customCommand: 'run build export $(Build.Repository.LocalPath)/$(adfRootFolder)/subscriptions/$(subscriptionId)/resourceGroups/$(resourceGroup)/providers/Microsoft.DataFactory/factories/$(dataFactory) "ArmTemplate"'
+  displayName: ' Generate ARM template'
+# Publish the artifact to be used as a source for a release pipeline.
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.Repository.LocalPath)/$(PackageFolder)/ArmTemplate' # Replace with the package.json folder
+    artifact: 'ArmTemplates'
+    publishLocation: 'pipeline'

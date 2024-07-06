@@ -1,0 +1,1 @@
+contain all files required for automation adf publish branch
